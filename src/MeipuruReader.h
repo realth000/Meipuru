@@ -1,0 +1,9 @@
+#ifndef MEIPURU_MEIPURUREADER_H
+#define MEIPURU_MEIPURUREADER_H
+
+
+class MeipuruReader {
+};
+
+
+#endif//MEIPURU_MEIPURUREADER_H
