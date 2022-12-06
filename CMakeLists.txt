@@ -9,6 +9,7 @@ add_definitions(-DTAGLIB_STATIC)
 
 include_directories(taglib/taglib
         taglib/taglib/toolkit
+        taglib/taglib/mpeg/id3v2
         ${CMAKE_BINARY_DIR}/taglib)
 
 add_subdirectory(taglib)
