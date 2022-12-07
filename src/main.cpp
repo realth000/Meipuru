@@ -1,69 +1,25 @@
-#include "fileref.h"
-#include "tag.h"
+#include <fstream>
 #include <iostream>
+
+#include "fileref.h"
 #include "taglib/taglib/toolkit/tpropertymap.h"
 #include "taglib/taglib/toolkit/tstring.h"
 #include "taglib/taglib/mpeg/mpegfile.h"
 #include "taglib/taglib/mpeg/id3v2/id3v2tag.h"
+#include "taglib/taglib/mpeg/id3v2/frames/attachedpictureframe.h"
+
+#include "MeipuruReader.h"
 
 int main(int argc, char *argv[]) {
-    for (int i = 1; i < argc; i++) {
-        /*
-         * Not consider files have id3V2 tags, treat like general tags.
-         */
-        std::cout << "Reading file" << argv[i] << std::endl;
-        TagLib::FileRef fileRef(argv[i]);
-        if (fileRef.isNull()) {
-            std::cout << "File is NULL:" << argv[i] << std::endl;
-            continue;
-        }
-        auto *tag = fileRef.tag();
-        if (tag == nullptr) {
-            std::cout << "Tag is NULL:" << argv[i] << std::endl;
-            continue;
-        }
-        std::cout << "Title:" << tag->title() << "\n"
-                  << "Artist:" << tag->artist() << "\n"
-                  << "Album:" << tag->album() << "\n"
-                  << "Year:" << tag->year() << "\n"
-                  << "track:" << tag->track() << "\n"
-                  << "Genre:" << tag->genre() << "\n"
-                  << "comment:" << tag->comment() <<
-                  std::endl;
-        auto propertyMap = fileRef.file()->properties();
-        // TODO: albumArtist is TagLib::string, should be std::string types.
-        auto albumArtist = propertyMap["ALBUMARTIST"].toString();
-        auto trackNumberString = propertyMap["TRACKNUMBER"].toString();
-        int trackNumber = 0;
-        int albumTrackCount = 0;
-        if (!trackNumberString.isEmpty()) {
-            auto pos = trackNumberString.split("/");
-            if (pos.size() == 2) {
-                // "1/20"
-                trackNumber = pos[0].toInt();
-                albumTrackCount = pos[1].toInt();
-            } else if (trackNumberString[0] == '/') {
-                // "/20"
-                albumTrackCount = pos[1].toInt();
-            } else {
-                // "1"
-                trackNumber = trackNumberString.toInt();
-            }
-        }
-        std::cout << "AlbumArtist:" << albumArtist << "\n" <<
-                  "TrackNumber:" << trackNumber << "\n" <<
-                  "AlbumTrackCount:" << albumTrackCount << std::endl;
-        const auto *audioProperties = fileRef.file()->audioProperties();
-        int bitRate = audioProperties->bitrate();
-        int sampleRate = audioProperties->sampleRate();
-        int channels = audioProperties->channels();
-        int length = audioProperties->length();
-        std::cout << "Bit Rate:" << bitRate << "\n"
-                  << "Sample Rate" << sampleRate << "\n"
-                  << "Channels" << channels << "\n"
-                  << "Length(seconds)" << length << std::endl;
-
+    if (argc < 2) {
+        std::cout << "Usage: " << argv[0] << " [audio file]";
+        return 0;
     }
+    auto meipuruReader = Meipuru::MeipuruReader();
+    auto baseTag = meipuruReader.readTagFromFile(argv[1]);
+    baseTag->print();
+    return 0;
+
     for (int i = 1; i < argc; i++) {
         /*
          * Consider files have id3V2 tags, use specified methods to fetch more data.
@@ -88,8 +44,19 @@ int main(int argc, char *argv[]) {
             unsyncedLyrics = frameListMap["USLT"].front()->toString();
         }
         std::cout << "Unsychronised lyrics:" << unsyncedLyrics << "\n"
-                  << "Sychronised lyrics:" << syncedLyrics << "\n"
+                  << "Sychronised lyrics:" << syncedLyrics
                   << std::endl;
+        TagLib::ID3v2::AttachedPictureFrame *albumCover = nullptr;
+        if (!frameListMap["APIC"].isEmpty()) {
+            albumCover = reinterpret_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameListMap["APIC"].front());
+            if (albumCover != nullptr) {
+                std::cout << "Album Cover: YES" << albumCover->mimeType() << std::endl;
+                std::fstream picStream;
+                picStream.open("./test.jpg", std::ios::out | std::ios::binary | std::ios::trunc);
+                picStream.write(albumCover->picture().data(), albumCover->picture().size());
+                picStream.close();
+            }
+        }
     }
     return 0;
 }
