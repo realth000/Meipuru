@@ -2,17 +2,25 @@
 #define MEIPURU_MEIPURUREADER_H
 
 #include <iostream>
+
+#include "fileref.h"
+#include "tag.h"
+
 #include "BaseTag.h"
 #include "ID3v2Tag.h"
-#include "fileref.h"
 
 namespace Meipuru {
     class MeipuruReaderOption {
     public:
         explicit MeipuruReaderOption();
 
+        bool useUnicode() const;
+
         Util::Encoding encoding;
         Util::LogLevel logLevel;
+
+    private:
+        bool unicode;
     };
 
     class MeipuruReader {
@@ -21,8 +29,11 @@ namespace Meipuru {
 
         BaseTag *readTagFromFile(const std::string &filePath);
 
+        ID3v2Tag *readID3v2TagFromFile(const std::string &filePath);
+
     private:
-        bool fetchBaseTag(const TagLib::FileRef &fileRef, BaseTag *baseTag) const;
+        bool fetchBaseTag(const TagLib::File *file, BaseTag *baseTag) const;
+
 
         MeipuruReaderOption option;
     };

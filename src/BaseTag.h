@@ -6,7 +6,7 @@
 namespace Meipuru {
     class BaseTag {
     public:
-        void print();
+        virtual void print();
 
         std::string filePath;
         std::string fileName;
