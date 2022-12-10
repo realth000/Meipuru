@@ -113,6 +113,8 @@ namespace Meipuru {
         // }
         if (!frameListMap["USLT"].isEmpty()) {
             retTag->lyrics = frameListMap["USLT"].front()->toString().to8Bit(useUnicode);
+        } else {
+            retTag->lyrics = "";
         }
         if (!frameListMap["APIC"].isEmpty()) {
             auto albumCover = reinterpret_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameListMap["APIC"].front());
@@ -125,6 +127,10 @@ namespace Meipuru {
                 // picStream.open("./test.jpg", std::ios::out | std::ios::binary | std::ios::trunc);
                 // picStream.write(albumCover->picture().data(), albumCover->picture().size());
                 // picStream.close();
+            } else {
+                retTag->albumCover.data = nullptr;
+                retTag->albumCover.size = 0;
+                retTag->albumCover.mimetype = "";
             }
         }
         return retTag;
