@@ -14,9 +14,12 @@ include_directories(taglib/taglib
 
 add_subdirectory(taglib)
 
-add_executable(Meipuru
-        src/main.cpp
-        src/MeipuruReader.h
+# Meipuru Library
+add_library(MeipuruLib
+        SHARED
+        src/MeipuruExport.h
+        bin/main.cpp
+        include/MeipuruReader.h
         src/MeipuruReader.cpp
         src/BaseTag.h
         src/BaseTag.cpp
@@ -24,6 +27,16 @@ add_executable(Meipuru
         src/ID3v2Tag.cpp
         src/Utils.h)
 
+# Executable for test
+add_executable(Meipuru
+        bin/main.cpp
+        include/MeipuruReader.h)
+
+set_target_properties(MeipuruLib PROPERTIES
+        DEFINE_SYMBOL MEIPURU_LIB)
+
+
+target_link_libraries(MeipuruLib tag)
 
 # If using MingW, add zlib target as required by TagLib.
-target_link_libraries(Meipuru tag)
+target_link_libraries(Meipuru MeipuruLib)

@@ -1,13 +1,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "taglib/taglib/toolkit/tpropertymap.h"
-#include "taglib/taglib/toolkit/tstring.h"
-#include "taglib/taglib/mpeg/mpegfile.h"
-#include "taglib/taglib/mpeg/id3v2/id3v2tag.h"
-#include "taglib/taglib/mpeg/id3v2/frames/attachedpictureframe.h"
-
-#include "MeipuruReader.h"
+#include "include/MeipuruReader.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -16,9 +10,11 @@ int main(int argc, char *argv[]) {
     }
     auto meipuruReader = Meipuru::MeipuruReader();
 #if 1
-    auto id3v2Tag = meipuruReader.readID3v2TagFromFile(argv[1]);
-    id3v2Tag->print();
-    delete id3v2Tag;
+    for (int i = 1; i < argc; i++) {
+        auto id3v2Tag = meipuruReader.readID3v2TagFromFile(argv[i]);
+        id3v2Tag->print();
+        delete id3v2Tag;
+    }
 #else
     auto baseTag = meipuruReader.readTagFromFile(argv[1]);
     baseTag->print();
