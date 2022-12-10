@@ -46,7 +46,9 @@ MeipuruID3v2Tag *MeipuruReadID3v2Tag(const char *filePath) {
             id3v2Tag->channels,
             id3v2Tag->length,
             id3v2Tag->lyrics.c_str(),
+            id3v2Tag->lyrics.size(),
             id3v2Tag->albumCover.data,
+            id3v2Tag->albumCover.size,
     };
     return meipuruID3v2Tag;
 }
