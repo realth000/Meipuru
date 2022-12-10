@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Add definition to make it works.
-add_definitions(-DTAGLIB_STATIC)
+# add_definitions(-DTAGLIB_STATIC)
 
 include_directories(taglib/taglib
         taglib/taglib/toolkit
