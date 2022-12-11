@@ -14,6 +14,8 @@ extern "C" {
 #else
 #define MEIPURU_EXPORT
 #endif
+#else
+#define MEIPURU_EXPORT
 #endif
 
 typedef struct {

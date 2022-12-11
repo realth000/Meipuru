@@ -30,11 +30,7 @@ namespace Meipuru {
 
         auto baseTag = new BaseTag();
         baseTag->filePath = filePath;
-#ifdef __WIN32
-        baseTag->fileName = fileRef.file()->name().toString().to8Bit(option.useUnicode());
-#else
         baseTag->fileName = fileRef.file()->name();
-#endif
         fetchBaseTag(fileRef.file(), baseTag);
         if (option.logLevel == Util::LogLevel::Debug) {
             std::cout << "Read tag from file:" << std::endl;
@@ -46,11 +42,6 @@ namespace Meipuru {
     bool MeipuruReader::fetchBaseTag(const TagLib::File *file, BaseTag *baseTag) const {
         const auto *tag = file->tag();
         if (tag == nullptr) {
-#ifdef __WIN32
-            std::cout << "Tag is NULL:" << file->name().toString() << std::endl;
-#else
-            std::cout << "Tag is NULL:" << file->name() << std::endl;
-#endif
             return false;
         }
         const bool useUnicode = option.useUnicode();
@@ -100,11 +91,7 @@ namespace Meipuru {
         const bool useUnicode = option.useUnicode();
         auto retTag = new ID3v2Tag;
         retTag->filePath = filePath;
-#ifdef __WIN32
-        retTag->fileName = mpegFile.name().toString().to8Bit(useUnicode);
-#else
         retTag->fileName = mpegFile.name();
-#endif
         fetchBaseTag(&mpegFile, retTag);
         const auto frameListMap = id3v2Tag->frameListMap();
         // TODO: Handle synchronous lyrics.
