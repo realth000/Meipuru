@@ -23,8 +23,7 @@ int main(int argc, char *argv[]) {
            "Sample Rate: %d\n"
            "Channels: %d\n"
            "Length: %d\n"
-           "Lyrics (length): %d\n"
-           "Album Cover (size): %d\n",
+           "Lyrics (length): %zd\n",
            id3V2Tag->fileName,
            id3V2Tag->filePath,
            id3V2Tag->title,
@@ -40,8 +39,10 @@ int main(int argc, char *argv[]) {
            id3V2Tag->sampleRate,
            id3V2Tag->channels,
            id3V2Tag->length,
-           strlen(id3V2Tag->lyrics),
-           strlen(id3V2Tag->albumCover));
+           strlen(id3V2Tag->lyrics));
+    if (id3V2Tag->albumCover != NULL && id3V2Tag->albumCoverLength > 0) {
+        printf("Album Cover (size): %d\n", id3V2Tag->albumCoverLength);
+    }
     MeipuruFree(id3V2Tag);
     return 0;
 }
