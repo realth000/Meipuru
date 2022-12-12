@@ -106,8 +106,9 @@ namespace Meipuru {
         if (!frameListMap["APIC"].isEmpty()) {
             auto albumCover = reinterpret_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameListMap["APIC"].front());
             if (albumCover != nullptr) {
-                retTag->albumCover.data = albumCover->picture().data();
-                retTag->albumCover.size = albumCover->picture().size();
+                const auto b = albumCover->picture().toBase64();
+                retTag->albumCover.data = b.data();
+                retTag->albumCover.size = b.size();
                 retTag->albumCover.mimetype = albumCover->mimeType().to8Bit(option.useUnicode());
                 // std::cout << "Album Cover: YES" << albumCover->mimeType() << std::endl;
                 // std::fstream picStream;
