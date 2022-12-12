@@ -119,6 +119,10 @@ namespace Meipuru {
                 retTag->albumCover.size = 0;
                 retTag->albumCover.mimetype = "";
             }
+        } else {
+            retTag->albumCover.data = nullptr;
+            retTag->albumCover.size = 0;
+            retTag->albumCover.mimetype = "";
         }
         return retTag;
     }
