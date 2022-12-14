@@ -16,9 +16,9 @@ namespace Meipuru {
         };
 
         struct Picture {
-            const char *data;
+            char *data;
             std::string mimetype;
             unsigned int size;
         };
-    }
-}
+    }// namespace Util
+}// namespace Meipuru

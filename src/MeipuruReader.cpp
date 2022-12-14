@@ -106,11 +106,12 @@ namespace Meipuru {
             retTag->lyrics = "";
         }
         if (!frameListMap["APIC"].isEmpty()) {
-            auto albumCover = reinterpret_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameListMap["APIC"].front());
+            auto albumCover = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameListMap["APIC"].front());
             if (albumCover != nullptr) {
-                const auto b = albumCover->picture().toBase64();
-                retTag->albumCover.data = b.data();
-                retTag->albumCover.size = b.size();
+                retTag->albumCover.size = albumCover->picture().size();
+                retTag->albumCover.data = (char *) malloc(sizeof(char) * retTag->albumCover.size + 1);
+                memcpy(retTag->albumCover.data, albumCover->picture().data(), retTag->albumCover.size);
+                retTag->albumCover.data[retTag->albumCover.size] = '\0';
                 retTag->albumCover.mimetype = albumCover->mimeType().to8Bit(option.useUnicode());
                 // std::cout << "Album Cover: YES" << albumCover->mimeType() << std::endl;
                 // std::fstream picStream;
