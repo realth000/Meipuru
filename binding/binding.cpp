@@ -29,6 +29,10 @@ MeipuruID3v2Tag *MeipuruReadID3v2Tag(const char *filePath) {
     auto reader = Meipuru::MeipuruReader();
     auto id3v2Tag = reader.readID3v2TagFromFile(filePath);
 
+    if (id3v2Tag == nullptr) {
+        return nullptr;
+    }
+
     auto *meipuruID3v2Tag = new MeipuruID3v2Tag{
             id3v2Tag->filePath.c_str(),
             id3v2Tag->fileName.c_str(),

@@ -74,15 +74,25 @@ namespace Meipuru {
             }
         }
         const auto *audioProperties = file->audioProperties();
-        baseTag->bitRate = audioProperties->bitrate();
-        baseTag->sampleRate = audioProperties->sampleRate();
-        baseTag->channels = audioProperties->channels();
-        baseTag->length = audioProperties->length();
+        if (audioProperties != nullptr) {
+            baseTag->bitRate = audioProperties->bitrate();
+            baseTag->sampleRate = audioProperties->sampleRate();
+            baseTag->channels = audioProperties->channels();
+            baseTag->length = audioProperties->length();
+        } else {
+            baseTag->bitRate = 0;
+            baseTag->sampleRate = 0;
+            baseTag->channels = 0;
+            baseTag->length = 0;
+        }
         return true;
     }
 
     ID3v2Tag *MeipuruReader::readID3v2TagFromFile(const std::string &filePath) {
         TagLib::MPEG::File mpegFile(filePath.c_str());
+        if (!mpegFile.isValid()) {
+            return nullptr;
+        }
         if (!mpegFile.hasID3v2Tag()) {
             return nullptr;
         }
@@ -100,14 +110,14 @@ namespace Meipuru {
         // if (!frameListMap["SYLT"].isEmpty()) {
         //     tag->lyrics = frameListMap["SYLT"].front()->toString().to8Bit(useUnicode);
         // }
-        if (!frameListMap["USLT"].isEmpty()) {
+        if (!frameListMap["USLT"].isEmpty() && frameListMap["USLT"].front() == nullptr) {
             retTag->lyrics = frameListMap["USLT"].front()->toString().to8Bit(useUnicode);
         } else {
             retTag->lyrics = "";
         }
         if (!frameListMap["APIC"].isEmpty()) {
             auto albumCover = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameListMap["APIC"].front());
-            if (albumCover != nullptr) {
+            if (albumCover != nullptr && albumCover->picture().size() > 0) {
                 retTag->albumCover.size = albumCover->picture().size();
                 retTag->albumCover.data = (char *) malloc(sizeof(char) * retTag->albumCover.size + 1);
                 memcpy(retTag->albumCover.data, albumCover->picture().data(), retTag->albumCover.size);
