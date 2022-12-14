@@ -1,8 +1,10 @@
 #include "include/MeipuruReader.h"
 
-#include "taglib/taglib/mpeg/mpegfile.h"
-#include "taglib/taglib/mpeg/id3v2/id3v2tag.h"
+#include <cstring>
+
 #include "taglib/taglib/mpeg/id3v2/frames/attachedpictureframe.h"
+#include "taglib/taglib/mpeg/id3v2/id3v2tag.h"
+#include "taglib/taglib/mpeg/mpegfile.h"
 #include "taglib/taglib/toolkit/tpropertymap.h"
 #include "taglib/taglib/toolkit/tstring.h"
 
@@ -107,7 +109,7 @@ namespace Meipuru {
             auto albumCover = reinterpret_cast<TagLib::ID3v2::AttachedPictureFrame *>(frameListMap["APIC"].front());
             if (albumCover != nullptr) {
                 const auto b = albumCover->picture().toBase64();
-                retTag->albumCover.data = strdup(b.data());
+                retTag->albumCover.data = b.data();
                 retTag->albumCover.size = b.size();
                 retTag->albumCover.mimetype = albumCover->mimeType().to8Bit(option.useUnicode());
                 // std::cout << "Album Cover: YES" << albumCover->mimeType() << std::endl;
@@ -128,4 +130,4 @@ namespace Meipuru {
         return retTag;
     }
 
-}
+}// namespace Meipuru
