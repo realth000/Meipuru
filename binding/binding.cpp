@@ -22,6 +22,7 @@ MeipuruTag *MeipuruReadTag(const char *filePath) {
             tag->channels,
             tag->length,
     };
+    delete tag;
     return meipuruTag;
 }
 
@@ -54,6 +55,7 @@ MeipuruID3v2Tag *MeipuruReadID3v2Tag(const char *filePath) {
             id3v2Tag->albumCover.data,
             id3v2Tag->albumCover.size,
     };
+    delete id3v2Tag;
     return meipuruID3v2Tag;
 }
 
@@ -61,16 +63,6 @@ void MeipuruFreeTag(MeipuruTag *tag) {
     if (tag == nullptr) {
         return;
     }
-
-    delete tag->filePath;
-    delete tag->fileName;
-    delete tag->title;
-    delete tag->artist;
-    delete tag->albumTitle;
-    delete tag->albumArtist;
-    delete tag->genre;
-    delete tag->comment;
-
     delete tag;
     tag = nullptr;
 }
@@ -79,19 +71,6 @@ void MeipuruFreeID3v2Tag(MeipuruID3v2Tag *id3V2Tag) {
     if (id3V2Tag == nullptr) {
         return;
     }
-
-    delete id3V2Tag->filePath;
-    delete id3V2Tag->fileName;
-    delete id3V2Tag->title;
-    delete id3V2Tag->artist;
-    delete id3V2Tag->albumTitle;
-    delete id3V2Tag->albumArtist;
-    delete id3V2Tag->genre;
-    delete id3V2Tag->comment;
-
-    delete id3V2Tag->lyrics;
-    delete id3V2Tag->albumCover;
-
     delete id3V2Tag;
     id3V2Tag = nullptr;
 }
