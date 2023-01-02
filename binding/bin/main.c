@@ -43,6 +43,6 @@ int main(int argc, char *argv[]) {
     if (id3V2Tag->albumCover != NULL && id3V2Tag->albumCoverLength > 0) {
         printf("Album Cover (size): %d\n", id3V2Tag->albumCoverLength);
     }
-    MeipuruFree(id3V2Tag);
+    MeipuruFreeID3v2Tag(id3V2Tag);
     return 0;
 }
