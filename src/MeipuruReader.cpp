@@ -110,7 +110,7 @@ namespace Meipuru {
         // if (!frameListMap["SYLT"].isEmpty()) {
         //     tag->lyrics = frameListMap["SYLT"].front()->toString().to8Bit(useUnicode);
         // }
-        if (!frameListMap["USLT"].isEmpty() && frameListMap["USLT"].front() == nullptr) {
+        if (!frameListMap["USLT"].isEmpty() && frameListMap["USLT"].front() != nullptr) {
             retTag->lyrics = frameListMap["USLT"].front()->toString().to8Bit(useUnicode);
         } else {
             retTag->lyrics = "";
