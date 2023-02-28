@@ -1,10 +1,10 @@
 #include "include/MeipuruReader.h"
 
 #include <cstring>
+#include <filesystem>
 
 #include "taglib/taglib/mpeg/id3v2/frames/attachedpictureframe.h"
 #include "taglib/taglib/mpeg/id3v2/id3v2tag.h"
-#include "taglib/taglib/mpeg/mpegfile.h"
 #include "taglib/taglib/toolkit/tpropertymap.h"
 #include "taglib/taglib/toolkit/tstring.h"
 
@@ -39,6 +39,10 @@ namespace Meipuru {
             baseTag->print();
         }
         return baseTag;
+    }
+
+    BaseTag *MeipuruReader::readTagFromFileW(const std::wstring &filePath) {
+        return readTagFromFile(std::filesystem::path(filePath).string());
     }
 
     bool MeipuruReader::fetchBaseTag(const TagLib::File *file, BaseTag *baseTag) const {
@@ -89,6 +93,7 @@ namespace Meipuru {
     }
 
     ID3v2Tag *MeipuruReader::readID3v2TagFromFile(const std::string &filePath) {
+        std::cout << "AAAA" << filePath << std::endl;
         TagLib::MPEG::File mpegFile(filePath.c_str());
         if (!mpegFile.isValid()) {
             return nullptr;
@@ -139,6 +144,9 @@ namespace Meipuru {
             retTag->albumCover.mimetype = "";
         }
         return retTag;
+    }
+    ID3v2Tag *MeipuruReader::readID3v2TagFromFileW(const std::wstring &filePath) {
+        return readID3v2TagFromFile(std::filesystem::path(filePath).string());
     }
 
 }// namespace Meipuru

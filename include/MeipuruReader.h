@@ -6,6 +6,7 @@
 #include "fileref.h"
 #include "tag.h"
 
+#include "mpeg/mpegfile.h"
 #include "src/BaseTag.h"
 #include "src/ID3v2Tag.h"
 #include "src/MeipuruExport.h"
@@ -30,13 +31,17 @@ namespace Meipuru {
 
         BaseTag *readTagFromFile(const std::string &filePath);
 
+        BaseTag *readTagFromFileW(const std::wstring &filePath);
+
         ID3v2Tag *readID3v2TagFromFile(const std::string &filePath);
+
+        ID3v2Tag *readID3v2TagFromFileW(const std::wstring &filePath);
 
     private:
         bool fetchBaseTag(const TagLib::File *file, BaseTag *baseTag) const;
 
         MeipuruReaderOption option;
     };
-}
+}// namespace Meipuru
 
 #endif//MEIPURU_MEIPURUREADER_H
