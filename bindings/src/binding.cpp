@@ -10,8 +10,6 @@
 #include <filesystem>
 #include <numeric>
 
-#include "MeipuruReader.h"
-
 namespace fs = std::filesystem;
 
 typedef struct {
@@ -153,17 +151,6 @@ MeipuruBaseTagBuffer* meipuruGetReadonlyBaseTag(MeipuruResource* resource) {
 void meipuruFreeBaseTag(MeipuruBaseTagBuffer* tagBuffer) {
     free(tagBuffer->buffer);
     delete tagBuffer;
-}
-
-MeipuruID3v2TagBuffer* readId3V2Tag(MeipuruResource* resource) {
-    const auto* baseTag = resource->f->tag();
-    TagLib::MPEG::File* id3v2File = dynamic_cast<TagLib::MPEG::File*>(resource->f->file());
-    if (id3v2File == nullptr) {
-        return nullptr;
-    }
-
-    // TODO: Generate buffer.
-    return nullptr;
 }
 
 int setTitle(MeipuruResource* resource, const char* title) {
