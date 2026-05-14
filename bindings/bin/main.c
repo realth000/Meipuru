@@ -22,7 +22,7 @@ typedef struct {
     uint32_t offset;
 } BufferWalker;
 
-bool hasSize(BufferWalker* walker, uint32_t size) { return walker->size > (walker->offset + size); }
+bool hasSize(BufferWalker* walker, uint32_t size) { return walker->size >= (walker->offset + size); }
 
 uint32_t* readUint32(BufferWalker* walker) {
     if (!hasSize(walker, sizeof(uint32_t))) {

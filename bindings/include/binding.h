@@ -93,7 +93,7 @@ typedef struct {
  */
 MEIPURU_API MeipuruBaseTagBuffer* meipuruGetReadonlyBaseTag(MeipuruResource* resource);
 
-MEIPURU_API void meipuruFreeBaseTagBuffer(MeipuruBaseTagBuffer* tagBuffer);
+MEIPURU_API void meipuruFreeBaseTag(MeipuruBaseTagBuffer* tagBuffer);
 
 #ifdef __cplusplus
 }

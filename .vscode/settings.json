@@ -1,5 +1,4 @@
 {
   "C_Cpp.formatting": "clangFormat",
-  "editor.formatOnSave": true,
-  "cmake.sourceDirectory": "${workspaceFolder}/bindings"
+  "editor.formatOnSave": true
 }

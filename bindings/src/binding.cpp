@@ -150,7 +150,7 @@ MeipuruBaseTagBuffer* meipuruGetReadonlyBaseTag(MeipuruResource* resource) {
     return tagBuffer;
 }
 
-void meipuruFreeBaseTagBuffer(MeipuruBaseTagBuffer* tagBuffer) {
+void meipuruFreeBaseTag(MeipuruBaseTagBuffer* tagBuffer) {
     free(tagBuffer->buffer);
     delete tagBuffer;
 }

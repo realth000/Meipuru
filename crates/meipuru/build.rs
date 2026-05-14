@@ -1,7 +1,17 @@
-fn main() {
-    println!("cargo:rustc-link-search=native=build/Debug");
-    println!("cargo:rustc-link-lib=static=MeipuruLib");
+use std::env;
 
-    // println!("cargo:rustc-link-search=native=build/taglib/taglib/Debug");
-    // println!("cargo:rustc-link-lib=static=Tag");
+fn main() {
+    let profile = env::var("PROFILE")
+        .map(|p| {
+            if p.to_lowercase() == "release" {
+                "Release"
+            } else {
+                "Debug"
+            }
+        })
+        .unwrap_or("Debug");
+
+    println!("cargo:rustc-link-search=native=target/{}", profile);
+    println!("cargo:rustc-link-lib=dylib=MeipuruLib");
+    println!("cargo:rustc-link-lib=dylib=Tag");
 }

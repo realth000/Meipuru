@@ -1,5 +1,6 @@
 cmake-build*
 /build
+/build-*
 /test_data
 /.vscode/c_cpp_properties.json
 /target
