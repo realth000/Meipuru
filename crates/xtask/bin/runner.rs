@@ -101,13 +101,14 @@ fn main() -> Result<(), i32> {
 
     // Build example binary.
 
+    let mut build_args = vec!["build", "--bin", "meipuru"];
+
+    if IN_RELEASE_MODE {
+        build_args.push("-r");
+    }
+
     let status = Command::new("cargo")
-        .args([
-            "build",
-            "--bin",
-            "meipuru",
-            if IN_RELEASE_MODE { "-r" } else { "" },
-        ])
+        .args(build_args)
         .status()
         .expect("[xtask] failed to run cargo build");
 
