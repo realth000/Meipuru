@@ -16,6 +16,30 @@
 
 namespace fs = std::filesystem;
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOSERVICE
+#define NOMCX
+#include <windows.h>
+inline std::wstring utf8_string_to_wstring(const char* str) {
+    if (!str || str[0] == '\0') {
+        return L"";
+    }
+
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
+    if (size_needed <= 0) {
+        return L"";
+    }
+
+    std::wstring wstrTo(size_needed, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, str, -1, &wstrTo[0], size_needed);
+
+    // Remove trailing '\0'.
+    wstrTo.resize(size_needed - 1);
+    return wstrTo;
+}
+#endif
+
 struct BufferChunk {
     const std::string str;
     offset_t& offset;
@@ -62,16 +86,36 @@ byte_t* buildBuffer(Header& header, std::array<BufferChunk, N>& chunks, uint32_t
 }
 
 struct MeipuruResource {
-    MeipuruResource(const char* filePath)
-        : filePath({filePath}),
-          fileName{fs::path{filePath}.filename().string()},
-          f{new TagLib::FileRef(TagLib::FileName(filePath))} {}
+    MeipuruResource(const char* filePathStr) {
+#ifdef _WIN32
+        std::wstring pathStr = utf8_string_to_wstring(filePathStr);
 
-    ~MeipuruResource() { delete this->f; }
+        const auto path = fs::path{pathStr};
 
-    const std::string filePath;
-    const std::string fileName;
-    const TagLib::FileRef* f;
+        // Utf-8 stuff.
+        auto u8PathBytes = path.u8string();
+        this->filePath = std::string(u8PathBytes.begin(), u8PathBytes.end());
+
+        auto u8NameBytes = path.filename().u8string();
+        this->fileName = std::string(u8NameBytes.begin(), u8NameBytes.end());
+
+        this->f = new TagLib::FileRef(TagLib::FileName(pathStr.c_str()));
+#else
+        this->filePath = std::string({filePathStr});
+        this->fileName = fs::path{filePathStr}.filename().string();
+        this->f = new TagLib::FileRef(TagLib::FileName(filePathStr));
+#endif
+    }
+
+    ~MeipuruResource() {
+        if (this->f) {
+            delete this->f;
+        }
+    }
+
+    std::string filePath;
+    std::string fileName;
+    const TagLib::FileRef* f = nullptr;
 };
 
 /**
