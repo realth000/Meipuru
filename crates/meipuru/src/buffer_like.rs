@@ -54,6 +54,23 @@ where
         self.read_u32()
     }
 
+    /// Read a string from the buffer.
+    ///
+    /// For the string, length and offset of the starting postiion are saved in the next 8 bytes
+    /// where the `self.offset` points to, but the string data is saved far forward somewhere not
+    /// after aside those 8 bytes. So **never** change `self.offset` when parsing string data.
+    ///
+    /// To make it clear:
+    ///
+    /// Do not use
+    ///
+    /// ```rust,no_run
+    /// self.offset = self.buffer.buffer().add(str_offset);
+    /// let str_bytes = slice::from_raw_parts(self.offset, str_length);
+    /// ```
+    ///
+    /// Because changing `self.offset` loses the current offset position and fields after current
+    /// field are not readable.
     pub(crate) fn read_string(&mut self) -> Option<String> {
         let str_offset = match self.read_offset() {
             Some(v) => v as usize,
@@ -76,3 +93,25 @@ where
         }
     }
 }
+
+macro_rules! walk_on_type {
+    ($walker: ident, u32, $field: literal) => {{
+        match $walker.read_u32() {
+            Some(v) => v,
+            None => return Err(format!("{} is none", $field)),
+        }
+    }};
+    ($walker: ident, i32, $field: literal) => {{
+        match $walker.read_i32() {
+            Some(v) => v,
+            None => return Err(format!("{} is none", $field)),
+        }
+    }};
+    ($walker: ident, String, $field: literal) => {{
+        match $walker.read_string() {
+            Some(v) => v,
+            None => return Err(format!("{} is none", $field)),
+        }
+    }};
+}
+pub(crate) use walk_on_type;

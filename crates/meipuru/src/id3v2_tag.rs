@@ -4,7 +4,7 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct BaseTag {
+pub struct ID3v2Tag {
     pub year: u32,
     pub track: u32,
     pub album_total_track: u32,
@@ -21,9 +21,11 @@ pub struct BaseTag {
     pub album_artist: String,
     pub genre: String,
     pub comment: String,
+
+    pub lyrics: String,
 }
 
-impl TryFrom<*mut MeipuruTagBuffer> for BaseTag {
+impl TryFrom<*mut MeipuruTagBuffer> for ID3v2Tag {
     type Error = String;
 
     fn try_from(value: *mut MeipuruTagBuffer) -> Result<Self, Self::Error> {
@@ -47,6 +49,7 @@ impl TryFrom<*mut MeipuruTagBuffer> for BaseTag {
         let album_artist = walk_on_type!(walker, String, "album_artist");
         let genre = walk_on_type!(walker, String, "genre");
         let comment = walk_on_type!(walker, String, "comment");
+        let lyrics = walk_on_type!(walker, String, "lyrics");
 
         Ok(Self {
             year,
@@ -64,6 +67,7 @@ impl TryFrom<*mut MeipuruTagBuffer> for BaseTag {
             album_artist,
             genre,
             comment,
+            lyrics,
         })
     }
 }

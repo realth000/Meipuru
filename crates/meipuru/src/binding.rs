@@ -14,12 +14,12 @@ pub(crate) struct MeipuruResource {
 }
 
 #[repr(C)]
-pub(crate) struct MeipuruBaseTagBuffer {
+pub(crate) struct MeipuruTagBuffer {
     buffer: *mut u8,
     size: u32,
 }
 
-impl BufferLike for MeipuruBaseTagBuffer {
+impl BufferLike for MeipuruTagBuffer {
     fn buffer(&self) -> *mut u8 {
         self.buffer
     }
@@ -35,6 +35,8 @@ unsafe extern "C" {
     pub fn meipuruMakeResource(file_path: *const c_char) -> *mut MeipuruResource;
     pub fn meipuruFreeResource(resource: *mut MeipuruResource);
 
-    pub fn meipuruGetReadonlyBaseTag(resource: *mut MeipuruResource) -> *mut MeipuruBaseTagBuffer;
-    pub fn meipuruFreeBaseTag(tag_buffer: *mut MeipuruBaseTagBuffer);
+    pub fn meipuruFreeTagBuffer(tag_buffer: *mut MeipuruTagBuffer);
+
+    pub fn meipuruGetReadonlyBaseTag(resource: *mut MeipuruResource) -> *mut MeipuruTagBuffer;
+    pub fn meipuruGetReadonlyID3v2Tag(tag_buffer: *mut MeipuruResource) -> *mut MeipuruTagBuffer;
 }

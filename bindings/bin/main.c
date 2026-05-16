@@ -117,7 +117,7 @@ void printStringField(BufferWalker* walker, const char* fieldName) {
     }
 }
 
-int printBaseTag(MeipuruBaseTagBuffer* tagBuffer) {
+int printBaseTag(MeipuruTagBuffer* tagBuffer) {
     if (!tagBuffer) {
         printf("null tag buffer\n");
         return 1;
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    MeipuruBaseTagBuffer* tagBuffer = meipuruGetReadonlyBaseTag(resource);
+    MeipuruTagBuffer* tagBuffer = meipuruGetReadonlyBaseTag(resource);
     int ret = printBaseTag(tagBuffer);
     meipuruFreeResource(resource);
 }

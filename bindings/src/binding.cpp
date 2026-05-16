@@ -1,6 +1,9 @@
 #include "binding.h"
 
+#include <frames/textidentificationframe.h>
 #include <taglib/fileref.h>
+#include <taglib/mpeg/id3v2/id3v2tag.h>
+#include <taglib/mpeg/mpegfile.h>
 #include <taglib/toolkit/tfile.h>
 #include <taglib/toolkit/tmap.h>
 #include <taglib/toolkit/tpropertymap.h>
@@ -9,14 +12,15 @@
 #include <cstring>
 #include <filesystem>
 #include <numeric>
+#include <optional>
 
 namespace fs = std::filesystem;
 
-typedef struct {
-    std::string str;
+struct BufferChunk {
+    const std::string str;
     offset_t& offset;
     uint32_t& length;
-} BufferChunk;
+};
 
 template <typename Header, size_t N>
 byte_t* buildBuffer(Header& header, std::array<BufferChunk, N>& chunks, uint32_t& bufferSize) {
@@ -70,26 +74,41 @@ struct MeipuruResource {
     const TagLib::FileRef* f;
 };
 
-MeipuruResource* meipuruMakeResource(const char* filePath) { return new MeipuruResource(filePath); }
+/**
+ * @brief Tag fields in basic tag and shared in different types of tags.
+ *
+ * These fields are shared because base tag is shared in types of tags.
+ */
+struct BasicTagFields {
+    uint32_t year;
+    uint32_t track;
+    uint32_t albumTotalTrack;
+    int32_t bitRate;
+    int32_t sampleRate;
+    int32_t channels;
+    int32_t length;
+    std::string title;
+    std::string artist;
+    std::string albumTitle;
+    std::string albumArtist;
+    std::string genre;
+    std::string comment;
+};
 
-void meipuruFreeResource(MeipuruResource* resource) { delete resource; }
-
-MeipuruBaseTagBuffer* meipuruGetReadonlyBaseTag(MeipuruResource* resource) {
-    const auto file = resource->f;
-    if (file == nullptr) {
-        return nullptr;
+std::optional<BasicTagFields> parseBaseTagFields(TagLib::File* file) {
+    if (!file) {
+        return std::nullopt;
     }
 
     const auto baseTag = file->tag();
     if (baseTag == nullptr) {
-        return nullptr;
+        return std::nullopt;
     }
 
-    auto header = MeipuruBaseTagHeader();
-    memset(&header, 0x00, sizeof(MeipuruBaseTagHeader));
+    BasicTagFields fields = {};
 
-    header.year = baseTag->year();
-    header.track = baseTag->track();
+    fields.year = baseTag->year();
+    fields.track = baseTag->track();
 
     const auto propertyMap = file->properties();
 
@@ -99,68 +118,158 @@ MeipuruBaseTagBuffer* meipuruGetReadonlyBaseTag(MeipuruResource* resource) {
             const auto pos = trackNumberString.split("/");
             if (pos.size() == 2) {
                 // "1/20"
-                header.track = static_cast<uint32_t>(std::stoul(pos[0].to8Bit(true)));
-                header.albumTotalTrack = static_cast<uint32_t>(std::stoul(pos[1].to8Bit(true)));
+                fields.track = static_cast<uint32_t>(std::stoul(pos[0].to8Bit(true)));
+                fields.albumTotalTrack = static_cast<uint32_t>(std::stoul(pos[1].to8Bit(true)));
             } else if (trackNumberString[0] == '/') {
                 // "/20"
-                header.albumTotalTrack = static_cast<uint32_t>(std::stoul(pos[1].to8Bit(true)));
+                fields.albumTotalTrack = static_cast<uint32_t>(std::stoul(pos[1].to8Bit(true)));
             } else {
                 // "1", do nothing because track is already assigned.
             }
         }
     }
 
-    const auto audioProperties = resource->f->audioProperties();
+    const auto audioProperties = file->audioProperties();
     if (audioProperties != nullptr) {
-        header.bitRate = audioProperties->bitrate();
-        header.sampleRate = audioProperties->sampleRate();
-        header.channels = audioProperties->channels();
-        header.length = audioProperties->length();
+        fields.bitRate = audioProperties->bitrate();
+        fields.sampleRate = audioProperties->sampleRate();
+        fields.channels = audioProperties->channels();
+        fields.length = audioProperties->length();
     }
 
-    const auto filePath = resource->filePath;
-    const auto fileName = resource->fileName;
-    const auto title = baseTag->title().to8Bit(true);
-    const auto artist = baseTag->artist().to8Bit(true);
-    const auto albumTitle = baseTag->album().to8Bit(true);
-    std::string albumArtist = {};
+    fields.title = baseTag->title().to8Bit(true);
+    fields.artist = baseTag->artist().to8Bit(true);
+    fields.albumTitle = baseTag->album().to8Bit(true);
     if (auto it = propertyMap.find("ALBUMARTIST"); it != propertyMap.end()) {
-        albumArtist = it->second.toString().to8Bit(true);
+        fields.albumArtist = it->second.toString().to8Bit(true);
     }
-    const auto genre = baseTag->genre().to8Bit(true);
-    const auto comment = baseTag->comment().to8Bit(true);
+    fields.genre = baseTag->genre().to8Bit(true);
+    fields.comment = baseTag->comment().to8Bit(true);
+
+    return fields;
+}
+
+/////////////////////////////////////////////////
+//
+// Public APIs begin
+//
+/////////////////////////////////////////////////
+
+MeipuruResource* meipuruMakeResource(const char* filePath) { return new MeipuruResource(filePath); }
+
+void meipuruFreeResource(MeipuruResource* resource) { delete resource; }
+
+MeipuruTagBuffer* meipuruGetReadonlyBaseTag(MeipuruResource* resource) {
+    if (!resource) {
+        return nullptr;
+    }
+
+    auto baseFields = parseBaseTagFields(resource->f->file());
+    if (!baseFields.has_value()) {
+        return nullptr;
+    }
+
+    auto header = MeipuruBaseTagHeader();
+    header.year = baseFields->year;
+    header.track = baseFields->track;
+    header.albumTotalTrack = baseFields->albumTotalTrack;
+    header.bitRate = baseFields->bitRate;
+    header.sampleRate = baseFields->sampleRate;
+    header.channels = baseFields->channels;
+    header.length = baseFields->length;
 
     uint32_t bufferSize = 0;
     auto buffer = buildBuffer(header,
                               std::array<BufferChunk, 8>{{
-                                  {filePath, header.filePathOffset, header.filePathLength},
-                                  {fileName, header.fileNameOffset, header.fileNameLength},
-                                  {title, header.titleOffset, header.titleLength},
-                                  {artist, header.artistOffset, header.artistLength},
-                                  {albumTitle, header.albumTitleOffset, header.albumTitleLength},
-                                  {albumArtist, header.albumArtistOffset, header.albumArtistLength},
-                                  {genre, header.genreOffset, header.genreLength},
-                                  {comment, header.commentOffset, header.commentLength},
+                                  {resource->filePath, header.filePathOffset, header.filePathLength},
+                                  {resource->fileName, header.fileNameOffset, header.fileNameLength},
+                                  {baseFields->title, header.titleOffset, header.titleLength},
+                                  {baseFields->artist, header.artistOffset, header.artistLength},
+                                  {baseFields->albumTitle, header.albumTitleOffset, header.albumTitleLength},
+                                  {baseFields->albumArtist, header.albumArtistOffset, header.albumArtistLength},
+                                  {baseFields->genre, header.genreOffset, header.genreLength},
+                                  {baseFields->comment, header.commentOffset, header.commentLength},
                               }},
                               bufferSize);
 
-    auto tagBuffer = new MeipuruBaseTagBuffer{buffer, bufferSize};
+    auto tagBuffer = new MeipuruTagBuffer{buffer, bufferSize};
     return tagBuffer;
 }
 
-void meipuruFreeBaseTag(MeipuruBaseTagBuffer* tagBuffer) {
+void meipuruFreeTagBuffer(MeipuruTagBuffer* tagBuffer) {
+    if (!tagBuffer) {
+        return;
+    }
+
     free(tagBuffer->buffer);
     delete tagBuffer;
 }
 
-int setTitle(MeipuruResource* resource, const char* title) {
-    // TODO: Save title to file.
-    return 0;
-}
+MeipuruTagBuffer* meipuruGetReadonlyID3v2Tag(MeipuruResource* resource) {
+    if (!resource) {
+        return nullptr;
+    }
 
-int setArtist(MeipuruResource* resource, const char* artist) {
-    // TODO: Save artist to file.
-    return 0;
-}
+    auto mpegFile = dynamic_cast<TagLib::MPEG::File*>(resource->f->file());
+    if (!mpegFile || !(mpegFile->hasID3v2Tag())) {
+        return nullptr;
+    }
 
-int setID3v2lyrics(MeipuruResource* resource, const char* lyrics) { return 0; }
+    auto baseFields = parseBaseTagFields(mpegFile);
+    if (!baseFields.has_value()) {
+        return nullptr;
+    }
+
+    MeipuruBaseTagHeader baseHeader = {};
+    baseHeader.year = baseFields->year;
+    baseHeader.track = baseFields->track;
+    baseHeader.albumTotalTrack = baseFields->albumTotalTrack;
+    baseHeader.bitRate = baseFields->bitRate;
+    baseHeader.sampleRate = baseFields->sampleRate;
+    baseHeader.channels = baseFields->channels;
+    baseHeader.length = baseFields->length;
+
+    MeipuruID3v2TagHeader header = {};
+    header.baseHeader = baseHeader;
+
+    const auto* id3v2Tag = mpegFile->ID3v2Tag();
+    if (!id3v2Tag) {
+        return nullptr;
+    }
+    const auto frameListMap = id3v2Tag->frameListMap();
+
+    std::string lyrics = {};
+    if (const auto it = frameListMap.find("USLT"); it != frameListMap.end()) {
+        lyrics = it->second.front()->toString().to8Bit(true);
+    } else if (const auto it = frameListMap.find("TXXX"); it != frameListMap.end()) {
+        // Text lyrics saved in TXXX.
+        for (const auto* frame : it->second) {
+            const auto* uTxFrame = dynamic_cast<const TagLib::ID3v2::UserTextIdentificationFrame*>(frame);
+            if (uTxFrame) {
+                const auto desc = uTxFrame->description().to8Bit(true);
+                if (desc == "LYRICS" || desc == "lyrics") {
+                    lyrics = uTxFrame->fieldList().back().to8Bit(true);
+                }
+            }
+        }
+    }
+
+    uint32_t bufferSize = 0;
+    auto buffer = buildBuffer(
+        header,
+        std::array<BufferChunk, 9>{{
+            {resource->filePath, header.baseHeader.filePathOffset, header.baseHeader.filePathLength},
+            {resource->fileName, header.baseHeader.fileNameOffset, header.baseHeader.fileNameLength},
+            {baseFields->title, header.baseHeader.titleOffset, header.baseHeader.titleLength},
+            {baseFields->artist, header.baseHeader.artistOffset, header.baseHeader.artistLength},
+            {baseFields->albumTitle, header.baseHeader.albumTitleOffset, header.baseHeader.albumTitleLength},
+            {baseFields->albumArtist, header.baseHeader.albumArtistOffset, header.baseHeader.albumArtistLength},
+            {baseFields->genre, header.baseHeader.genreOffset, header.baseHeader.genreLength},
+            {baseFields->comment, header.baseHeader.commentOffset, header.baseHeader.commentLength},
+            {lyrics, header.lyricsOffset, header.lyricsLength},
+        }},
+        bufferSize);
+
+    auto tagBuffer = new MeipuruTagBuffer{buffer, bufferSize};
+    return tagBuffer;
+}
