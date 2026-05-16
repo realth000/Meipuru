@@ -12,7 +12,7 @@ WIP
   - [x] Read
   - [ ] Write
 - ID3v2 tag.
-  - [ ] Read
+  - [x] Read
   - [ ] Write
 
 where base tag is
@@ -102,8 +102,14 @@ Run rust example:
 # Run in debug mode
 cargo r --bin runner <path/to/mp3>
 
+# Run in debug mode, read id3v2 tag
+cargo r --bin runner -- --id3v2 <path/to/mp3>
+
 # Run in release mode
 cargo r -r --bin runner <path/to/mp3>
+
+# Run in release mode, read id3v2 tag
+cargo r -r --bin runner -- --id3v2 <path/to/mp3>
 ```
 
 ## License
