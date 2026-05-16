@@ -61,7 +61,7 @@ fn main() {
         match args[1].as_str() {
             "--id3v2" => match parse_id3v2_tag(&file_path) {
                 Ok(v) => {
-                    println!("base_tag: {v:#?}");
+                    println!("id3v2_tag: {v:#?}");
                     return;
                 }
                 Err(e) => {
