@@ -1,6 +1,6 @@
 # meipuru
 
-Rust bindings for TagLib v2.3.
+Rust bindings for [TagLib](https://taglib.org/) v2.3.
 
 ## State
 
@@ -8,12 +8,15 @@ WIP
 
 ## Features
 
-- Basic tag.
+- Basic tag
   - [x] Read
   - [ ] Write
-- ID3v2 tag.
+- ID3v2 tag
   - [x] Read
   - [ ] Write
+- Linking TagLib
+  - [x] Static linking (by default)
+  - [x] Dynamic linking (opt-in by enable `dynamic` feature)
 
 where base tag is
 
@@ -41,7 +44,9 @@ pub struct BaseTag {
 
 ## Example
 
-See [./crates/meipuru/bin/meipuru.rs](./crates/meipuru/bin/meipuru.rs) for details.
+### Read tags
+
+See [./examples/read.rs](./example/read.rs) for details.
 
 ```rust
 let mut resource = match meipuru::load_resource(file_path) {
@@ -84,14 +89,10 @@ base_tag: BaseTag {
 
 ```bash
 # Debug build
-cmake --preset debug
-cmake --build --preset debug
-cargo r --bin runner
+cargo b
 
 # Release build
-cmake --preset release
-cmake --build --preset release
-cargo r -r --bin runner
+cargo b -r
 ```
 
 ## Testing
@@ -99,21 +100,25 @@ cargo r -r --bin runner
 Run rust example:
 
 ```bash
-# Run in debug mode
-cargo r --bin runner <path/to/mp3>
+# Run example to read tag.
+cargo r --example read path/to/file
 
-# Run in debug mode, read id3v2 tag
-cargo r --bin runner -- --id3v2 <path/to/mp3>
+# Run example to read id3v2 tag.
+cargo r --exmple read --id3v2 path/to/file
 
-# Run in release mode
-cargo r -r --bin runner <path/to/mp3>
-
-# Run in release mode, read id3v2 tag
-cargo r -r --bin runner -- --id3v2 <path/to/mp3>
+# Run example to read tag with dynamic linking taglib.
+cargo r --features=dynamic --example read path/to/file
 ```
 
 ## License
 
-Source code in this project is licensed under MIT license, except code in [./bindings/taglib](./bindings/taglib/).
+Source code in this project is licensed under MIT license.
 
-This project uses [TagLib](https://taglib.org/) which is licensed under LGPL and MPL. TagLib artifacts are built from [this repo](https://github.com/realth000/taglib/) and dynamically linked.
+### About TagLib
+
+[TagLib](https://taglib.org/) is distributed under the **LGPL** and **MPL**.
+
+- Source code, as a git submodule, is stored in [./bindings/taglib/](./bindings/taglib/) directory.
+  - Upstream [taglib repo](https://github.com/taglib/taglib).
+- Artifacts are compiled locally and **statically** linked by default.
+  - To opt-in dynamic linking, enabl the `dynamic` feature.

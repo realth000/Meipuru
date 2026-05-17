@@ -4,13 +4,13 @@ use meipuru::{base_tag::BaseTag, id3v2_tag::ID3v2Tag};
 
 fn print_usage() {
     println!(
-        r#"""usage:
+        r#"usage:
     print base tags:
-        meipuru <path-to-file>
+        read <path-to-file>
 
     print id3v2 tags:
-        meipuru --id3v2 <path-to-file>
-"""#
+        read --id3v2 <path-to-file>
+"#
     );
 }
 
