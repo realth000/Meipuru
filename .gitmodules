@@ -1,3 +1,3 @@
 [submodule "bindings/taglib"]
 	path = bindings/taglib
-	url = git@github.com:realth000/taglib.git
+	url = https://github.com/taglib/taglib.git
