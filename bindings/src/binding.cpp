@@ -223,8 +223,7 @@ MeipuruTagBuffer* meipuruGetReadonlyBaseTag(MeipuruResource* resource) {
     header.length = baseFields->length;
 
     uint32_t bufferSize = 0;
-    auto buffer = buildBuffer(header,
-                              std::array<BufferChunk, 8>{{
+    auto chunks = std::array<BufferChunk, 8>{{
                                   {resource->filePath, header.filePathOffset, header.filePathLength},
                                   {resource->fileName, header.fileNameOffset, header.fileNameLength},
                                   {baseFields->title, header.titleOffset, header.titleLength},
@@ -233,8 +232,8 @@ MeipuruTagBuffer* meipuruGetReadonlyBaseTag(MeipuruResource* resource) {
                                   {baseFields->albumArtist, header.albumArtistOffset, header.albumArtistLength},
                                   {baseFields->genre, header.genreOffset, header.genreLength},
                                   {baseFields->comment, header.commentOffset, header.commentLength},
-                              }},
-                              bufferSize);
+                              }};
+    auto buffer = buildBuffer(header, chunks, bufferSize);
 
     auto tagBuffer = new MeipuruTagBuffer{buffer, bufferSize};
     return tagBuffer;
@@ -298,10 +297,7 @@ MeipuruTagBuffer* meipuruGetReadonlyID3v2Tag(MeipuruResource* resource) {
         }
     }
 
-    uint32_t bufferSize = 0;
-    auto buffer = buildBuffer(
-        header,
-        std::array<BufferChunk, 9>{{
+    auto chunks = std::array<BufferChunk, 9>{{
             {resource->filePath, header.baseHeader.filePathOffset, header.baseHeader.filePathLength},
             {resource->fileName, header.baseHeader.fileNameOffset, header.baseHeader.fileNameLength},
             {baseFields->title, header.baseHeader.titleOffset, header.baseHeader.titleLength},
@@ -311,8 +307,10 @@ MeipuruTagBuffer* meipuruGetReadonlyID3v2Tag(MeipuruResource* resource) {
             {baseFields->genre, header.baseHeader.genreOffset, header.baseHeader.genreLength},
             {baseFields->comment, header.baseHeader.commentOffset, header.baseHeader.commentLength},
             {lyrics, header.lyricsOffset, header.lyricsLength},
-        }},
-        bufferSize);
+        }};
+
+    uint32_t bufferSize = 0;
+    auto buffer = buildBuffer(header, chunks, bufferSize);
 
     auto tagBuffer = new MeipuruTagBuffer{buffer, bufferSize};
     return tagBuffer;
